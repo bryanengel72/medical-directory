@@ -89,6 +89,7 @@ const INITIAL_CLINICS = [
   {
     id: "c1",
     name: "X Dentistry",
+    website: "https://xdentistry.com",
     city: "TJ",
     cityLabel: "Tijuana, near NewCity Medical Plaza",
     verified: "2026-07-02",
@@ -104,6 +105,7 @@ const INITIAL_CLINICS = [
   {
     id: "c2",
     name: "Advanced Smiles Dentistry",
+    website: "https://advancedsmilesdentistry.com",
     city: "TJ",
     cityLabel: "Tijuana",
     verified: "2026-07-02",
@@ -119,6 +121,7 @@ const INITIAL_CLINICS = [
   {
     id: "c3",
     name: "My Baja Dental",
+    website: "https://mybajadental.com",
     city: "TJ",
     cityLabel: "Tijuana",
     verified: "2026-07-02",
@@ -134,6 +137,7 @@ const INITIAL_CLINICS = [
   {
     id: "c4",
     name: "Smile Together Tijuana",
+    website: "https://smiletogethertijuana.com",
     city: "TJ",
     cityLabel: "Tijuana, Zona Rio (Plaza Rio)",
     verified: "2026-07-02",
@@ -149,6 +153,7 @@ const INITIAL_CLINICS = [
   {
     id: "c5",
     name: "Dental Solutions Algodones",
+    website: "https://dentalsolutionsalgodones.com",
     city: "LA",
     cityLabel: "Los Algodones",
     verified: "2026-07-02",
@@ -164,6 +169,7 @@ const INITIAL_CLINICS = [
   {
     id: "c6",
     name: "Novadent Dental Clinic",
+    website: "https://novadentdentalclinic.com",
     city: "LA",
     cityLabel: "Los Algodones",
     verified: "2026-07-02",
@@ -179,6 +185,7 @@ const INITIAL_CLINICS = [
   {
     id: "c7",
     name: "Sani Dental Group",
+    website: "https://sanidentalgroup.com",
     city: "LA",
     cityLabel: "Los Algodones",
     verified: "2026-07-02",
@@ -194,6 +201,7 @@ const INITIAL_CLINICS = [
   {
     id: "c8",
     name: "Dental Del Rio Algodones",
+    website: "https://dentaldelrioalgodones.com",
     city: "LA",
     cityLabel: "Los Algodones",
     verified: "2026-07-02",
@@ -233,7 +241,7 @@ function CostBar({ cost }) {
   const scale = Math.max(cost.usTotal, cost.total) * 1.04;
   const pct = (v) => (v / scale) * 100;
   return (
-    <div style={{ marginTop: 14 }}>
+    <div style={{ marginTop: 34 }}>
       <div
         style={{
           position: "relative",
@@ -842,27 +850,47 @@ export default function DentalCorridorMVP() {
                       {fmt(cost.total)}
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setQuoteClinic(clinic);
-                      setQuoteForm({ name: "", email: "", notes: "" });
-                      setQuoteSent(null);
-                    }}
-                    style={{
-                      marginTop: 10,
-                      background: T.amber,
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "7px 13px",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "'Archivo', sans-serif",
-                    }}
-                  >
-                    Request a quote
-                  </button>
+                  <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => {
+                        setQuoteClinic(clinic);
+                        setQuoteForm({ name: "", email: "", notes: "" });
+                        setQuoteSent(null);
+                      }}
+                      style={{
+                        background: T.amber,
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        padding: "7px 13px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        fontFamily: "'Archivo', sans-serif",
+                      }}
+                    >
+                      Request a quote
+                    </button>
+                    {clinic.website && (
+                      <a
+                        href={clinic.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          color: T.amber,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          textDecoration: "none",
+                          padding: "7px 4px",
+                          fontFamily: "'Archivo', sans-serif",
+                        }}
+                      >
+                        Visit website ↗
+                      </a>
+                    )}
+                  </div>
                 </article>
               ))}
               <div style={{ fontSize: 11.5, color: T.inkSoft, lineHeight: 1.5 }}>
@@ -1004,11 +1032,30 @@ export default function DentalCorridorMVP() {
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "flex-end",
+                      justifyContent: clinic.website ? "space-between" : "flex-end",
+                      alignItems: "center",
                       gap: 10,
                       marginTop: 12,
+                      flexWrap: "wrap",
                     }}
                   >
+                    {clinic.website && (
+                      <a
+                        href={clinic.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: T.inkSoft,
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          textDecoration: "none",
+                          fontFamily: "'Archivo', sans-serif",
+                        }}
+                      >
+                        Visit website ↗
+                      </a>
+                    )}
+                    <div style={{ display: "flex", gap: 10 }}>
                     <button
                       onClick={() => toggleCompare(clinic.id)}
                       style={{
@@ -1045,6 +1092,7 @@ export default function DentalCorridorMVP() {
                     >
                       Request a quote
                     </button>
+                    </div>
                   </div>
                 </article>
               );
@@ -1109,6 +1157,20 @@ export default function DentalCorridorMVP() {
                     ["Rating", ({ clinic }) => `★ ${clinic.rating} (${clinic.reviews})`],
                     ["Border pickup", ({ clinic }) => (clinic.pickup ? "Yes" : "No")],
                     ["Last verified", ({ clinic }) => clinic.verified],
+                    ["Website", ({ clinic }) =>
+                      clinic.website ? (
+                        <a
+                          href={clinic.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: T.teal, fontWeight: 600, textDecoration: "none" }}
+                        >
+                          Visit ↗
+                        </a>
+                      ) : (
+                        "—"
+                      ),
+                    ],
                   ].map(([label, render]) => (
                     <tr key={label}>
                       <td style={{ ...tdStyle, fontWeight: 600, color: T.inkSoft, whiteSpace: "nowrap" }}>
