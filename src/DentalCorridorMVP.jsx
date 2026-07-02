@@ -7,10 +7,14 @@ import { useState, useMemo } from "react";
 // below were pulled via Firecrawl (scraped July 2026): prices from
 // each clinic's own published price-list page, ratings/reviews from
 // their Yelp business page (Google via Trustindex for Novadent,
-// which has no Yelp listing). Accreditation and warranty-length
-// flags are still NOT independently verified -- they reflect each
-// clinic's own marketing claims (e.g. "ADA-affiliated" on their
-// site) or are illustrative placeholders where no claim was found.
+// which has no Yelp listing), and insurance notes from each clinic's
+// own FAQ/insurance page (see clinic.insurance.note). Accreditation,
+// warranty-length, and insurance flags are still NOT independently
+// verified -- they reflect each clinic's own marketing claims (e.g.
+// "ADA-affiliated" on their site) or are illustrative placeholders
+// where no claim was found. Every clinic that says it "accepts"
+// insurance is describing reimbursement-paperwork assistance, not
+// direct billing or in-network coverage.
 // ---------------------------------------------------------------
 
 const T = {
@@ -99,6 +103,10 @@ const INITIAL_CLINICS = [
     warranty: 5,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "Accepts PPO paperwork: pay the clinic directly, they fill out reimbursement forms for you to submit to your insurer.",
+    },
     prices: { implant: 1540, crown: 550, veneers: 550, rootcanal: 400, allon4: 11000 },
     featured: { active: true, procedures: ["implant", "allon4"] },
   },
@@ -115,6 +123,10 @@ const INITIAL_CLINICS = [
     warranty: 5,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "States it \"accepts major dental insurance\" on its price list; no further detail published on direct billing vs. reimbursement.",
+    },
     prices: { implant: 1550, crown: 550, veneers: 550, rootcanal: 350, allon4: 9000 },
     featured: { active: false, procedures: [] },
   },
@@ -131,6 +143,10 @@ const INITIAL_CLINICS = [
     warranty: 3,
     english: true,
     pickup: false,
+    insurance: {
+      helps: false,
+      note: "No insurance information published.",
+    },
     prices: { implant: 2075, crown: 550, veneers: 550, rootcanal: 350, allon4: 9500 },
     featured: { active: false, procedures: [] },
   },
@@ -147,6 +163,10 @@ const INITIAL_CLINICS = [
     warranty: 3,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "Team helps verify your coverage and prepares the documentation you need to submit for reimbursement.",
+    },
     prices: { implant: 1540, crown: 550, veneers: 550, rootcanal: 400, allon4: 11000 },
     featured: { active: false, procedures: [] },
   },
@@ -163,6 +183,10 @@ const INITIAL_CLINICS = [
     warranty: 5,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "FAQ says yes, they fill out the paperwork — contact them with your plan details to verify coverage first.",
+    },
     prices: { implant: 1350, crown: 499, veneers: 399, rootcanal: 250, allon4: 9900 },
     featured: { active: true, procedures: ["crown", "veneers"] },
   },
@@ -179,6 +203,10 @@ const INITIAL_CLINICS = [
     warranty: 2,
     english: true,
     pickup: false,
+    insurance: {
+      helps: false,
+      note: "No insurance information published; site instead promotes third-party financing loans.",
+    },
     prices: { implant: 1400, crown: 450, veneers: 500, rootcanal: 350, allon4: 9350 },
     featured: { active: false, procedures: [] },
   },
@@ -195,6 +223,10 @@ const INITIAL_CLINICS = [
     warranty: 5,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "Says it \"accepts most dental insurance providers,\" but processes claims through outside financing partners for a 10–30% convenience fee.",
+    },
     prices: { implant: 1610, crown: 490, veneers: 450, rootcanal: 340, allon4: 8110 },
     featured: { active: false, procedures: [] },
   },
@@ -211,6 +243,10 @@ const INITIAL_CLINICS = [
     warranty: 3,
     english: true,
     pickup: true,
+    insurance: {
+      helps: true,
+      note: "Handles the paperwork for you -- contact them with your plan details to verify coverage before booking.",
+    },
     prices: { implant: 1200, crown: 450, veneers: 350, rootcanal: 199, allon4: 8900 },
     featured: { active: false, procedures: [] },
   },
@@ -444,7 +480,7 @@ function Dot({ c }) {
   );
 }
 
-function Badge({ children, tone }) {
+function Badge({ children, tone, title }) {
   const tones = {
     teal: { bg: T.tealSoft, fg: T.teal },
     plain: { bg: "#EEF1EF", fg: T.inkSoft },
@@ -453,6 +489,7 @@ function Badge({ children, tone }) {
   const s = tones[tone || "plain"];
   return (
     <span
+      title={title}
       style={{
         background: s.bg,
         color: s.fg,
@@ -461,6 +498,7 @@ function Badge({ children, tone }) {
         padding: "3px 8px",
         borderRadius: 4,
         letterSpacing: "0.02em",
+        cursor: title ? "help" : undefined,
       }}
     >
       {children}
@@ -477,6 +515,7 @@ export default function DentalCorridorMVP() {
   const [units, setUnits] = useState(1);
   const [cityKey, setCityKey] = useState("sandiego");
   const [accreditedOnly, setAccreditedOnly] = useState(false);
+  const [insuranceOnly, setInsuranceOnly] = useState(false);
   const [minWarranty, setMinWarranty] = useState(0);
   const [compare, setCompare] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
@@ -489,6 +528,7 @@ export default function DentalCorridorMVP() {
 
   const rows = useMemo(() => {
     let list = clinics.filter((c) => (accreditedOnly ? c.accredited : true))
+      .filter((c) => (insuranceOnly ? c.insurance?.helps : true))
       .filter((c) => c.warranty >= minWarranty)
       .map((c) => ({ clinic: c, cost: costFor(c, proc, units, cityKey) }));
 
@@ -506,7 +546,7 @@ export default function DentalCorridorMVP() {
       list = list.sort((a, b) => a.cost.total - b.cost.total);
     }
     return list;
-  }, [clinics, proc, units, cityKey, accreditedOnly, minWarranty, quickMatch]);
+  }, [clinics, proc, units, cityKey, accreditedOnly, insuranceOnly, minWarranty, quickMatch]);
 
   const featuredRows = useMemo(() => {
     return clinics
@@ -794,6 +834,21 @@ export default function DentalCorridorMVP() {
               <span>Accredited clinics only</span>
             </label>
 
+            <label style={checkRow}>
+              <input
+                type="checkbox"
+                checked={insuranceOnly}
+                onChange={(e) => setInsuranceOnly(e.target.checked)}
+                style={{ width: "auto" }}
+              />
+              <span>Helps with US insurance</span>
+            </label>
+            <div style={{ fontSize: 11, color: T.inkSoft, marginTop: -4, marginBottom: 12, lineHeight: 1.4 }}>
+              Means the clinic will give you paperwork to file for
+              out-of-network reimbursement -- none of these clinics bill a US
+              insurer directly.
+            </div>
+
             <label style={labelStyle}>Minimum warranty</label>
             <select
               value={minWarranty}
@@ -854,6 +909,9 @@ export default function DentalCorridorMVP() {
                         <Badge tone="amber">Featured</Badge>
                         <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{clinic.name}</h2>
                         {clinic.accredited && <Badge tone="teal">Accredited</Badge>}
+                        {clinic.insurance?.helps && (
+                          <Badge title={clinic.insurance.note}>Insurance reimbursement help</Badge>
+                        )}
                       </div>
                       <div
                         style={{
@@ -1017,6 +1075,9 @@ export default function DentalCorridorMVP() {
                           <Badge>{clinic.warranty}-yr warranty</Badge>
                         )}
                         {clinic.pickup && <Badge>Border pickup</Badge>}
+                        {clinic.insurance?.helps && (
+                          <Badge title={clinic.insurance.note}>Insurance reimbursement help</Badge>
+                        )}
                       </div>
                       <div
                         style={{
@@ -1182,6 +1243,13 @@ export default function DentalCorridorMVP() {
                     ["Warranty", ({ clinic }) => clinic.warranty + " years"],
                     ["Rating", ({ clinic }) => `★ ${clinic.rating} (${clinic.reviews})`],
                     ["Border pickup", ({ clinic }) => (clinic.pickup ? "Yes" : "No")],
+                    ["US insurance", ({ clinic }) => (
+                      <span title={clinic.insurance?.note}>
+                        {clinic.insurance?.helps
+                          ? "Reimbursement help"
+                          : clinic.insurance?.note || "Not published"}
+                      </span>
+                    )],
                     ["Last verified", ({ clinic }) => clinic.verified],
                     ["Website", ({ clinic }) =>
                       clinic.website ? (
@@ -1231,11 +1299,15 @@ export default function DentalCorridorMVP() {
       >
         Clinic names, locations, and procedure prices are sourced from each
         clinic's own published price list. Ratings and review counts are
-        sourced from Yelp (Google, via Trustindex, for Novadent). Accreditation
-        and warranty terms reflect clinics' own marketing claims and have not
-        been independently verified. Prices change often -- always confirm
-        pricing, credentials, and treatment plans directly with a provider
-        before traveling. This tool does not provide medical advice.
+        sourced from Yelp (Google, via Trustindex, for Novadent). Accreditation,
+        warranty, and insurance terms reflect clinics' own marketing claims
+        and have not been independently verified. "Insurance reimbursement
+        help" means the clinic will provide paperwork for you to submit to
+        your own insurer after paying directly -- it is not direct billing or
+        in-network coverage, and your plan may not reimburse out-of-country
+        care at all. Prices change often -- always confirm pricing,
+        credentials, insurance details, and treatment plans directly with a
+        provider before traveling. This tool does not provide medical advice.
       </footer>
       )}
 
