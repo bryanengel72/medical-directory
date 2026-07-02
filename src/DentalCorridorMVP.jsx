@@ -579,6 +579,32 @@ export default function DentalCorridorMVP() {
           outline: 2px solid ${T.teal};
           outline-offset: 1px;
         }
+        html, body {
+          overflow-x: hidden;
+        }
+        .corridor-grid {
+          grid-template-columns: 280px 1fr;
+        }
+        .corridor-aside-panel {
+          position: sticky;
+          top: 16px;
+        }
+        @media (max-width: 860px) {
+          .corridor-grid {
+            grid-template-columns: 1fr;
+          }
+          .corridor-aside-panel {
+            position: static;
+          }
+        }
+        @media (max-width: 480px) {
+          .corridor-header {
+            padding: 22px 16px 20px !important;
+          }
+          .corridor-main {
+            padding: 20px 14px 48px !important;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           * { transition: none !important; }
         }
@@ -586,6 +612,7 @@ export default function DentalCorridorMVP() {
 
       {/* Header */}
       <header
+        className="corridor-header"
         style={{
           background: T.ink,
           color: "#F4F7F5",
@@ -632,7 +659,7 @@ export default function DentalCorridorMVP() {
             includes travel and lodging from your departure city, compared
             against the US average for the same work.
           </p>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               onClick={() => setView("directory")}
               style={{
@@ -677,25 +704,24 @@ export default function DentalCorridorMVP() {
         />
       ) : (
       <main
+        className="corridor-main corridor-grid"
         style={{
           maxWidth: 1180,
           margin: "0 auto",
           padding: "26px 20px 60px",
           display: "grid",
-          gridTemplateColumns: "280px 1fr",
           gap: 24,
         }}
       >
         {/* Controls */}
         <aside>
           <div
+            className="corridor-aside-panel"
             style={{
               background: T.surface,
               border: "1px solid " + T.line,
               borderRadius: 10,
               padding: 18,
-              position: "sticky",
-              top: 16,
             }}
           >
             <button
@@ -796,7 +822,7 @@ export default function DentalCorridorMVP() {
         </aside>
 
         {/* Results */}
-        <section>
+        <section style={{ minWidth: 0 }}>
           {!showCompare && featuredRows.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div
